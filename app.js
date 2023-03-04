@@ -62,14 +62,54 @@ renderer.domElement.addEventListener("mouseup", function (event) {
   isDragging = false;
 });
 
-// render the scene
-function render() {
-  requestAnimationFrame(render);
+// add event listeners to control the camera position with the mouse
+var isMoving = false;
+var previousMousePosition = {
+  x: 0,
+  y: 0,
+};
+renderer.domElement.addEventListener("mousedown", function (event) {
+  isMoving = true;
+  previousMousePosition = {
+    x: event.clientX,
+    y: event.clientY,
+  };
+});
+renderer.domElement.addEventListener("mousemove", function (event) {
+  if (isMoving) {
+    var deltaMove = {
+      x: event.clientX - previousMousePosition.x,
+      y: event.clientY - previousMousePosition.y,
+    };
+    camera.position.x += deltaMove.x * 0.01;
+    camera.position.y -= deltaMove.y * 0.01;
+    camera.lookAt(scene.position);
+  }
+  previousMousePosition = {
+    x: event.clientX,
+    y: event.clientY,
+  };
+});
+renderer.domElement.addEventListener("mouseup", function (event) {
+  isMoving = false;
+});
+
+// add animation loop to continuously update the scene
+function animate() {
+  requestAnimationFrame(animate);
+  globe.rotation.y += 0.005;
   renderer.render(scene, camera);
 }
-render();
+animate();
 
-// helper function to convert degrees to radians
+// utility function to convert degrees to radians
 function toRadians(degrees) {
   return (degrees * Math.PI) / 180;
 }
+
+// resize the canvas when the window is resized
+window.addEventListener("resize", function () {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
